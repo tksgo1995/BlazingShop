@@ -2,6 +2,8 @@
 using BlazingShop.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace BlazingShop.Server.Controllers
 {
