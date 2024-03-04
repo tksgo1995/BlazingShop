@@ -14,6 +14,7 @@ namespace BlazingShop.Server.Data
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+		public DbSet<Edition> Editions { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -21,7 +22,7 @@ namespace BlazingShop.Server.Data
 				new Category{Id = 1, Name = "Books", Url = "books", Icon = "book"},
 				new Category{Id = 2, Name = "Electronics", Url = "electronics", Icon = "camera-slr"},
 				new Category{Id = 3, Name = "Video Games", Url = "video-games", Icon = "aperture"}
-			);
+				);
 
 			modelBuilder.Entity<Product>().HasData(
 				new Product
@@ -33,7 +34,7 @@ namespace BlazingShop.Server.Data
 					Image = "https://upload.wikimedia.org/wikipedia/en/b/bd/H2G2_UK_front_cover.jpg",
 					DateCreated = new DateTime(2021, 1, 1),
 					Price = 9.99m,
-					OriginalPrice = 19.99m
+					OriginalPrice = 19.99m,
 				},
 				new Product
 				{
@@ -121,7 +122,28 @@ namespace BlazingShop.Server.Data
 					DateCreated = new DateTime(2021, 1, 1),
 					Price = 14.99m
 				}
-			);
+				);
+
+			modelBuilder.Entity<Edition>().HasData(
+				new Edition { Id = 1, Name = "Paperback" },
+				new Edition { Id = 2, Name = "E-Book" },
+				new Edition { Id = 3, Name = "Audiobook" },
+				new Edition { Id = 4, Name = "PC" },
+				new Edition { Id = 5, Name = "PlayStation" },
+				new Edition { Id = 6, Name = "Xbox" }
+				);
+
+			modelBuilder.SharedTypeEntity<Dictionary<string, object>>("EditionProduct")
+				.HasData(
+					new { EditionsId = 1, ProductsId = 1 },
+					new { EditionsId = 2, ProductsId = 1 },
+					new { EditionsId = 3, ProductsId = 1 },
+					new { EditionsId = 1, ProductsId = 2 },
+					new { EditionsId = 2, ProductsId = 2 },
+					new { EditionsId = 4, ProductsId = 7 },
+					new { EditionsId = 5, ProductsId = 7 },
+					new { EditionsId = 6, ProductsId = 7 }
+				);
 		}
 	}
 }
