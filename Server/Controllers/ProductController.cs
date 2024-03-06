@@ -30,10 +30,16 @@ namespace BlazingShop.Server.Controllers
 			return Ok(await _productService.GetProductsByCategory(categoryUrl));
 		}
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
-        {
-            return Ok(await _productService.GetProduct(id));
-        }
+		[HttpGet("{id}")]
+		public async Task<ActionResult<Product>> GetProduct(int id)
+		{
+			return Ok(await _productService.GetProduct(id));
+		}
+
+		[HttpGet("Search/{searchText}")]
+		public async Task<ActionResult<List<Product>>> SearchProducts(string searchText)
+		{
+			return Ok(await _productService.SearchProduct(searchText));
+		}
 	}
 }

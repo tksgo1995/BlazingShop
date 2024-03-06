@@ -2,8 +2,11 @@
 using BlazingShop.Shared;
 using Blazored.LocalStorage;
 using Blazored.Toast.Services;
+using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 namespace BlazingShop.Client.Services.CartService
@@ -12,29 +15,43 @@ namespace BlazingShop.Client.Services.CartService
 	{
 		private readonly ILocalStorageService _localStorage;
 		private readonly IProductService _productService;
+		private readonly HttpClient _http;
 		private readonly IToastService _toastService;
 
 		public event Action OnChange;
 
-        public CartService(ILocalStorageService localStorage, IToastService toastService, IProductService productService)
+        public CartService(ILocalStorageService localStorage, 
+			IToastService toastService, 
+			IProductService productService,
+			HttpClient http)
         {
 			_localStorage = localStorage;
 			_productService = productService;
+			_http = http;
 			_toastService = toastService;
 		}
 
-        public async Task AddToCart(ProductVariant productVariant)
+        public async Task AddToCart(CartItem item)
 		{
-			var cart = await _localStorage.GetItemAsync<List<ProductVariant>>("cart");
+			var cart = await _localStorage.GetItemAsync<List<CartItem>>("cart");
 			if(cart == null)
 			{
-				cart = new List<ProductVariant>();
+				cart = new List<CartItem>();
 			}
 
-			cart.Add(productVariant);
-			await _localStorage.SetItemAsync<List<ProductVariant>>("cart", cart);
+			var sameItem = cart.Find(x => x.ProductId == item.ProductId && x.EditionId == item.EditionId);
+			if(sameItem == null)
+			{
+				cart.Add(item);
+			}
+			else
+			{
+				sameItem.Quantity += item.Quantity;
+			}
 
-			var product = await _productService.GetProduct(productVariant.ProductId);
+			await _localStorage.SetItemAsync("cart", cart);
+
+			var product = await _productService.GetProduct(item.ProductId);
 			_toastService.ShowSuccess(product.Title, "Added to cart:");
 
 			OnChange.Invoke();
@@ -42,40 +59,18 @@ namespace BlazingShop.Client.Services.CartService
 
 		public async Task<List<CartItem>> GetCartItems()
 		{
-			var result = new List<CartItem>();
-			var cart = await _localStorage.GetItemAsync<List<ProductVariant>>("cart");
+			var cart = await _localStorage.GetItemAsync<List<CartItem>>("cart");
 			if(cart == null)
 			{
-				return result;
+				return new List<CartItem>();
 			}
 
-			foreach(var item in cart)
-			{
-				var product = await _productService.GetProduct(item.ProductId);
-				var cartItem = new CartItem
-				{
-					ProductId = item.ProductId,
-					ProductTitle = product.Title,
-					Image = product.Image,
-					EditionId = item.EditionId
-				};
-
-				var variant = product.Variants.Find(v => v.EditionId == item.EditionId);
-				if(variant != null)
-				{
-					cartItem.EditionName = variant.Edition?.Name;
-					cartItem.Price = variant.Price;
-				}
-
-				result.Add(cartItem);
-			}
-
-			return result;
+			return cart;
 		}
 
 		public async Task DeleteItem(CartItem item)
 		{
-			var cart = await _localStorage.GetItemAsync<List<ProductVariant>>("cart");
+			var cart = await _localStorage.GetItemAsync<List<CartItem>>("cart");
 			if(cart == null)
 			{
 				return;
@@ -86,6 +81,19 @@ namespace BlazingShop.Client.Services.CartService
 
 			await _localStorage.SetItemAsync("cart", cart);
 			OnChange.Invoke();
+		}
+
+		public async Task EmptyCart()
+		{
+			await _localStorage.RemoveItemAsync("cart");
+			OnChange.Invoke();
+		}
+
+		public async Task<string> Checkout()
+		{
+			var result = await _http.PostAsJsonAsync("api/payment/checkout", await GetCartItems());
+			var url = await result.Content.ReadAsStringAsync();
+			return url;
 		}
 	}
 }
