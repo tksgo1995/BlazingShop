@@ -2,6 +2,7 @@ using BlazingShop.Client;
 using BlazingShop.Client.Services.CartService;
 using BlazingShop.Client.Services.CategoryService;
 using BlazingShop.Client.Services.ProductService;
+using BlazingShop.Client.Services.StatsService;
 using Blazored.LocalStorage;
 using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -25,6 +26,7 @@ namespace BlazingShop.Client
 			builder.Services.AddScoped<IProductService, ProductService>();
 			builder.Services.AddScoped<ICategoryService, CategoryService>();
 			builder.Services.AddScoped<ICartService, CartService>();
+			builder.Services.AddScoped<IStatsService, StatsService>();
 			builder.Services.AddBlazoredLocalStorage();
 			builder.Services.AddBlazoredToast();
 			builder.Services.AddOptions();

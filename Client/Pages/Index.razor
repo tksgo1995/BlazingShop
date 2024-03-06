@@ -3,6 +3,7 @@
 @inject ICategoryService CategoryService
 @inject IProductService ProductService
 @inject ISyncLocalStorageService LocalStorageService
+@inject IStatsService StatsService
 
 @if (category != null)
 {
@@ -21,7 +22,6 @@ else
 	</AuthorizeView>
 	<ProductList />
 }
-
 
 @code
 {
@@ -42,5 +42,8 @@ else
 		{
 			category = null;
 		}
+
+		await StatsService.IncrementVisits();
+		await StatsService.GetVisits();
 	}
 }
